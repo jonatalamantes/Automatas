@@ -1,0 +1,22 @@
+{
+    "alphabet": ["a", "b"],
+    "states": ["q1", "q2", "q3", "q4", "q5", "q6", "q7"],
+    "transitions": [
+        {"state_from": "q1", "token": "a", "state_to": "q4"},
+        {"state_from": "q1", "token": "b", "state_to": "q6"},
+        {"state_from": "q2", "token": "a", "state_to": "q1"},
+        {"state_from": "q2", "token": "b", "state_to": "q7"},
+        {"state_from": "q3", "token": "a", "state_to": "q2"},
+        {"state_from": "q3", "token": "b", "state_to": "q4"},
+        {"state_from": "q4", "token": "a", "state_to": "q6"},
+        {"state_from": "q4", "token": "b", "state_to": "q5"},
+        {"state_from": "q5", "token": "a", "state_to": "q7"},
+        {"state_from": "q5", "token": "b", "state_to": "q5"},
+        {"state_from": "q6", "token": "a", "state_to": "q3"},
+        {"state_from": "q6", "token": "b", "state_to": "q6"},
+        {"state_from": "q7", "token": "a", "state_to": "q3"},
+        {"state_from": "q7", "token": "b", "state_to": "q7"}
+    ],
+    "initial": "q1",
+    "aceptation": ["q6", "q7"]
+}

@@ -1,0 +1,91 @@
+{
+    "aceptation": [
+        "q6"
+    ], 
+    "alphabet": [
+        "0", 
+        "1"
+    ], 
+    "initial": "q1",
+    "states": [
+        "q1", 
+        "q2", 
+        "q3", 
+        "q4", 
+        "q5", 
+        "q6", 
+        "q7"
+    ], 
+    "transitions": [
+        {
+            "state_from": "q1", 
+            "state_to": "q2", 
+            "token": "0"
+        }, 
+        {
+            "state_from": "q1", 
+            "state_to": "q3", 
+            "token": "1"
+        }, 
+        {
+            "state_from": "q2", 
+            "state_to": "q4", 
+            "token": "0"
+        }, 
+        {
+            "state_from": "q2", 
+            "state_to": "q5", 
+            "token": "1"
+        }, 
+        {
+            "state_from": "q3", 
+            "state_to": "q6", 
+            "token": "0"
+        }, 
+        {
+            "state_from": "q3", 
+            "state_to": "q7", 
+            "token": "1"
+        }, 
+        {
+            "state_from": "q4", 
+            "state_to": "q4", 
+            "token": "0"
+        }, 
+        {
+            "state_from": "q4", 
+            "state_to": "q5", 
+            "token": "1"
+        }, 
+        {
+            "state_from": "q5", 
+            "state_to": "q6", 
+            "token": "0"
+        }, 
+        {
+            "state_from": "q5", 
+            "state_to": "q7", 
+            "token": "1"
+        }, 
+        {
+            "state_from": "q6", 
+            "state_to": "q5", 
+            "token": "1"
+        }, 
+        {
+            "state_from": "q6", 
+            "state_to": "q4", 
+            "token": "0"
+        }, 
+        {
+            "state_from": "q7", 
+            "state_to": "q6", 
+            "token": "0"
+        }, 
+        {
+            "state_from": "q7", 
+            "state_to": "q7", 
+            "token": "1"
+        }
+    ]
+}
