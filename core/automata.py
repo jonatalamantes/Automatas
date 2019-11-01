@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# pylint: disable=W0640,R0915
+# pylint: disable=W0640
 """ File for Automata Class """
 
 import json
@@ -380,27 +380,22 @@ class Automata:
                 for right in self.get_states():
                     if right >= left:
                         pair = [left, right]
-                        key = ",".join(pair)
                         compatible = list(map(lambda x: str(x in self.get_aceptation()), pair))
-                        pairs[key] = compatible.count("True") != 1
+                        pairs[",".join(pair)] = compatible.count("True") != 1
 
             return pairs
 
         def iterate_incompatibles(original_pairs):
 
             # Iterate until get only find all the incompatibles
-            counter = 0
             no_compatibles = 1
             pairs = dict(original_pairs)
             while no_compatibles != 0:
-                counter += 1
                 no_compatibles = 0
                 for pair, compatible in dict(pairs).items():
 
                     # Find only still comparibles pairs
                     if compatible:
-
-                        result = True
 
                         for token in self.__alphabet:
 
@@ -413,11 +408,8 @@ class Automata:
 
                             # Transition no compartible
                             if not pairs[eval_key]:
-                                result = result and False
-
-                        if not result:
-                            pairs[pair] = False
-                            no_compatibles += 1
+                                pairs[pair] = False
+                                no_compatibles += 1
 
             # Dilter only valid pairs
             pairs = sorted(list(filter(lambda x: pairs[x], pairs.keys())))
