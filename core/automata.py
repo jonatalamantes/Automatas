@@ -149,6 +149,8 @@ class Automata:
         def str_replace(one_str):
             return new_names[one_str]
 
+        print(new_names)
+
         self.do_name_mapping(str_replace)
 
     def clean(self):
@@ -531,6 +533,9 @@ class Automata:
         self_copy.set_initial("i")
         self_copy.get_transitions().append(Transition("i", "", old_initial))
         self_copy.get_aceptation().append("i")
+
+        self_copy.build_alphabet()
+        self_copy.build_states()
 
         self_copy.clean()
         return self_copy
