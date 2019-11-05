@@ -149,8 +149,6 @@ class Automata:
         def str_replace(one_str):
             return new_names[one_str]
 
-        print(new_names)
-
         self.do_name_mapping(str_replace)
 
     def clean(self):
