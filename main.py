@@ -93,6 +93,7 @@ class App:
         print("*** Create Tasks ***")
         print("C) Create Automata")
         print("L) Load Automata")
+        print("X) Load from Regular Expresion")
         if self.__loaded:
             print("S) Save Automata")
         print("")
@@ -103,6 +104,7 @@ class App:
             print("T) Transform To Determinisitic")
             print("M) Minimizate")
             print("N) Uniform Names")
+            print("R) Regular Expresion")
             print("P) Print Automata")
             print("*) Kleen Star")
             print("")
@@ -139,6 +141,13 @@ class App:
         if option == "C":
             print("Create")
             self.__auto = App.create_automata()
+            self.__auto.console_print()
+            self.__loaded = True
+
+        if option == "X":
+            print("Create from Regex")
+            regex = xinput("Insert the regex: ")
+            self.__auto = Automata.read_expresion(regex)
             self.__auto.console_print()
             self.__loaded = True
 
@@ -190,6 +199,11 @@ class App:
             print("\nGenerate Deterministic")
             self.__auto = self.__auto.to_deterministic()
             self.__auto.console_print()
+
+        if option == "R" and self.__loaded:
+            copy_self = self.__auto.copy()
+            exp = copy_self.generate_expresion()
+            print("\nRegular Expresion: {0}\n".format(exp))
 
         if option == "M" and self.__loaded:
             print("Minimizate")

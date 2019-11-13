@@ -75,6 +75,13 @@ class Transition:
         new_trans.set_token(self.get_token())
         return new_trans
 
+    def sort_str(self):
+        """ Sort Key """
+        return "{0}{1}{2}".format(self.get_state_from(), \
+                                  self.get_state_to(), \
+                                  self.get_token())
+
+
     def copy(self):
         """ Copy object """
         def same_callback(str_value):

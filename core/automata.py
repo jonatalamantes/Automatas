@@ -141,8 +141,13 @@ class Automata:
 
         new_names = {}
 
+        # Add the initial state always as q0
+        states = list(self.get_states())
+        states.remove(self.get_initial())
+        states.insert(0, self.get_initial())
+
         _counter = 0
-        for state in self.__states:
+        for state in states:
             new_names[state] = "q{0}".format(_counter)
             _counter += 1
 
@@ -192,10 +197,14 @@ class Automata:
         The callback receive the old name of the state and return the new name
         """
 
+        self.build_alphabet()
+        self.build_states()
+
         self.__states = list(map(callback, self.__states))
         self.__initial = callback(self.__initial)
         self.__aceptation = list(map(callback, self.__aceptation))
         self.__transitions = list(map(lambda x: x.replace_name(callback), self.__transitions))
+        self.__transitions.sort(key=lambda x: x.sort_str(), reverse=False)
 
     def is_deterministic(self):
         """ Return if the automata is deterministic """
@@ -463,8 +472,6 @@ class Automata:
                         new_automata.get_transitions().append(new_trans)
 
             # Build missing elements
-            new_automata.build_alphabet()
-            new_automata.build_states()
             new_automata.clean()
             return new_automata
 
@@ -521,10 +528,15 @@ class Automata:
         """ Return one autoamta with the Kleen star of original """
 
         self_copy = self.copy()
+
+        #uniform name in case of already "i" state
+        if "i" in self_copy.get_states():
+            self_copy.uniform_names()
+
         old_initial = self_copy.get_initial()
 
         #Add transation from aceptation to initial
-        for aceptation in self.__aceptation:
+        for aceptation in self_copy.get_aceptation():
             self_copy.get_transitions().append(Transition(aceptation, "", "i"))
 
         #Add new initial state
@@ -532,11 +544,162 @@ class Automata:
         self_copy.get_transitions().append(Transition("i", "", old_initial))
         self_copy.get_aceptation().append("i")
 
-        self_copy.build_alphabet()
-        self_copy.build_states()
-
         self_copy.clean()
         return self_copy
+
+    def generate_expresion(self):
+        """ Generate the regular expresion of the automata """
+
+        copy_self = self.copy()
+        copy_self.uniform_names()
+
+        #Add new initial state
+        trans = Transition("i", "", copy_self.get_initial())
+        copy_self.get_transitions().append(trans)
+        copy_self.set_initial("i")
+
+        #Add new aceptation state
+        for final in copy_self.get_aceptation():
+            trans = Transition(final, "", "f")
+            copy_self.get_transitions().append(trans)
+        copy_self.set_aceptation(["f"])
+        copy_self.clean()
+
+        #Compute states to eliminate
+        wait_states = list(copy_self.get_states())
+        wait_states.remove("i")
+        wait_states.remove("f")
+
+        #Start elimination of states
+        while wait_states:
+            to_delete_state = wait_states.pop()
+
+            # Fetch transitions
+            left_trans = copy_self.fetch_transition(None, None, to_delete_state)
+            left_trans = list(filter(lambda x: x.get_state_from() != to_delete_state, left_trans))
+            right_trans = copy_self.fetch_transition(to_delete_state, None, None)
+            right_trans = list(filter(lambda x: x.get_state_to() != to_delete_state, right_trans))
+            in_trans = copy_self.fetch_transition(to_delete_state, None, to_delete_state)
+
+            full_trans = left_trans + in_trans + right_trans
+
+            in_token = list(map(lambda x: x.get_token(), in_trans))
+            in_token = list(filter(lambda x: x != "", in_token))
+            if in_token:
+                in_token = "({0})*".format("+".join(in_token))
+            else:
+                in_token = ""
+
+            # Create new transitions
+            for left in left_trans:
+                for right in right_trans:
+                    new_token = left.get_token() + in_token + right.get_token()
+                    new_trans = Transition(left.get_state_from(), new_token, right.get_state_to())
+                    copy_self.get_transitions().append(new_trans)
+
+            # Remove unnecesary transitions
+            for trans in full_trans:
+                copy_self.get_transitions().remove(trans)
+            copy_self.get_states().remove(to_delete_state)
+
+        final_trans = copy_self.fetch_transition("i", None, "f")
+        final_trans = list(map(lambda x: "({0})".format(x.get_token()), final_trans))
+        return "+".join(final_trans)
+
+    @staticmethod
+    def atomic_automata(char):
+        """ Create a automata that recognize one the "char" expresion """
+        if char in ["+", "*", "(", ")", "."]:
+            return char
+        automata = Automata()
+        automata.set_initial("q0")
+        automata.set_aceptation(["q1"])
+        automata.get_transitions().append(Transition("q0", char, "q1"))
+        automata.clean()
+        return automata
+
+    @staticmethod
+    def read_expresion(exp):
+        """ Create an automata from a regular expresion """
+
+        def add_concatenation(exp_list):
+            new_exp = []
+            for i in range(0, len(exp_list)-1):
+                exp = exp_list[i]
+                next_exp = exp_list[i+1]
+
+                add = (isinstance(exp, Automata) and isinstance(next_exp, Automata))
+                add = add or (isinstance(exp, Automata) and next_exp == "(")
+                add = add or (exp == ")" and isinstance(next_exp, Automata))
+                add = add or (exp == ")" and next_exp == "(")
+                add = add or (exp == "*" and isinstance(next_exp, Automata))
+                add = add or (exp == ")" and next_exp == "(")
+
+                new_exp.append(exp)
+                if add:
+                    new_exp.append(".")
+
+            new_exp.append(exp_list[-1])
+            return new_exp
+
+        def reverse_polish_map(exp_list, priority):
+            stack = []
+            sufix = []
+            for exp in exp_list:
+                if isinstance(exp, Automata):
+                    sufix.append(exp)
+                else:
+                    if exp == "(":
+                        stack.append(exp)
+                    elif exp == ")":
+                        last_exp = stack.pop()
+                        while last_exp != "(":
+                            sufix.append(last_exp)
+                            last_exp = stack.pop()
+                    else:
+                        while len(stack) >= 1 and (priority[stack[-1]] >= priority[exp]):
+                            sufix.append(stack.pop())
+                        stack.append(exp)
+
+            while len(stack) >= 1:
+                sufix.append(stack.pop())
+            return sufix
+
+        def reverse_polish_eval(exp_list):
+            stack = []
+            for exp in exp_list:
+                if isinstance(exp, Automata):
+                    stack.append(exp)
+                else:
+                    if exp == "*":
+                        auto = stack.pop()
+                        auto = auto.kleen_star()
+                        stack.append(auto)
+                    else:
+                        auto1 = stack.pop()
+                        auto2 = stack.pop()
+                        auto3 = None
+                        if exp == ".":
+                            auto3 = Automata.concatenation(auto2, auto1)
+                        else:
+                            auto3 = Automata.merge_automata(auto2, auto1, "union")
+                        stack.append(auto3)
+            return stack.pop()
+
+        priority = {
+            "*": 4,
+            ".": 3,
+            "+": 2,
+            "(": 1
+        }
+
+        exp_list = list(map(Automata.atomic_automata, exp))
+        exp_list = add_concatenation(exp_list)
+        rev_polish = reverse_polish_map(exp_list, priority)
+        auto = reverse_polish_eval(rev_polish)
+
+        auto.uniform_names()
+        return auto
 
     @staticmethod
     def concatenation(automata1, automata2):
@@ -563,9 +726,6 @@ class Automata:
         for old_aceptation in copy1.get_aceptation():
             link = Transition(old_aceptation, "", copy2.get_initial())
             new_automata.get_transitions().append(link)
-
-        new_automata.build_alphabet()
-        new_automata.build_states()
 
         new_automata.clean()
         return new_automata
@@ -603,7 +763,10 @@ class Automata:
                 goes_one = list(map(lambda x: x.get_state_to(), goes_one))
                 goes_two = list(map(lambda x: x.get_state_to(), goes_two))
 
-                goes = ",".join(goes_one + goes_two)
+                goes_list = goes_one + goes_two
+                goes = ",".join(goes_list)
+                if len(goes_list) == 1:
+                    goes = "{0},{0}".format(goes_list[0])
 
                 if goes not in new_automata.get_states():
                     new_automata.get_states().append(goes)
@@ -624,9 +787,6 @@ class Automata:
                 if state.split(",")[0] in deter1.get_aceptation() and \
                    state.split(",")[1] in deter2.get_aceptation():
                     new_automata.get_aceptation().append(state)
-
-        new_automata.build_alphabet()
-        new_automata.build_states()
 
         new_automata.clean()
         return new_automata
