@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# pylint: disable=W0640,R0912
+# pylint: disable=W0640,R0912,R0915
 """ File for Automata Class """
 
 import json
