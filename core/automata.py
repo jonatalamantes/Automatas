@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# pylint: disable=W0640
+# pylint: disable=W0640,R0912
 """ File for Automata Class """
 
 import json
@@ -737,8 +737,8 @@ class Automata:
         The merge type must to be union or intersection
         """
 
-        if merge_type not in ["union", "intersection"]:
-            raise ValueError("merge_type parameter must to be [union, intersection]")
+        if merge_type not in ["union", "intersection", "equiv"]:
+            raise ValueError("merge_type parameter must to be [union, intersection, equiv]")
 
         deter1 = automata1.to_deterministic()
         deter2 = automata2.to_deterministic()
@@ -748,6 +748,13 @@ class Automata:
         new_automata.set_initial(",".join([automata1.get_initial(), automata2.get_initial()]))
         new_automata.set_states([new_automata.get_initial()])
         new_automata.set_transitions([])
+
+        equivalence = {}
+        if merge_type == "equiv":
+            deter1 = deter1.minimizete()
+            deter2 = deter2.minimizete()
+            deter1.uniform_names()
+            deter2.uniform_names()
 
         # Evaluate every path of the automata
         while not new_automata.is_deterministic():
@@ -767,6 +774,17 @@ class Automata:
                 goes = ",".join(goes_list)
                 if len(goes_list) == 1:
                     goes = "{0},{0}".format(goes_list[0])
+
+                if merge_type == "equiv":
+                    equiv_pair = goes.split(",")
+                    if equiv_pair[0] not in equivalence:
+                        equivalence[equiv_pair[0]] = equiv_pair[1]
+                    else:
+                        if equivalence[equiv_pair[0]] != equiv_pair[1]:
+                            error_str = "State [a1:{0}] with '{1}' ".format(equiv_pair[0], token)
+                            error_str += "goes to [a2:{0}] ".format(equiv_pair[1])
+                            error_str += "instead of [a2:{0}]".format(equivalence[equiv_pair[0]])
+                            raise ValueError(error_str)
 
                 if goes not in new_automata.get_states():
                     new_automata.get_states().append(goes)

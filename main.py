@@ -113,6 +113,7 @@ class App:
         print("U) Union Automatas")
         print("I) Intersection Automatas")
         print("Y) Concatenation Automatas")
+        print("E) Two Regular Expresion Equivalence")
         print("")
         print("q) Exit")
         print("")
@@ -155,6 +156,23 @@ class App:
         """
         Do operation that requieres two automatas
         """
+
+        if option == "E":
+
+            print("Equivalence")
+
+            one = xinput("Insert the first regular expresion:  ")
+            two = xinput("Insert the second regular expresion: ")
+
+            auto1 = Automata.read_expresion(one)
+            auto2 = Automata.read_expresion(two)
+
+            try:
+                auto3 = Automata.merge_automata(auto1, auto2, "equiv")
+                print("\n*** Regular Expresions ARE equivalent ***\n")
+            except ValueError as error:
+                print("\n*** Regular Expresions are NOT equivalent ***")
+                print(str(error) + '\n')
 
         if option in ["I", "U", "Y"]:
 
