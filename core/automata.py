@@ -326,6 +326,9 @@ class Automata:
         if self.is_deterministic():
             return self.copy()
 
+        if self.get_alphabet() == [""]:
+            return self.copy()
+
         copy_self = self.copy()
         copy_self.extend_states()
 
@@ -378,6 +381,9 @@ class Automata:
         Minimizate the automata without change the original
         The minimization is done by creating pairs of states and calculate its compatibility
         """
+
+        if self.get_alphabet() == [""]:
+            return self.copy()
 
         if not self.is_deterministic():
             raise ValueError("Automata must to be deterministic")
@@ -639,7 +645,8 @@ class Automata:
                 if add:
                     new_exp.append(".")
 
-            new_exp.append(exp_list[-1])
+            if exp_list:
+                new_exp.append(exp_list[-1])
             return new_exp
 
         def reverse_polish_map(exp_list, priority):
@@ -696,9 +703,12 @@ class Automata:
         exp_list = list(map(Automata.atomic_automata, exp))
         exp_list = add_concatenation(exp_list)
         rev_polish = reverse_polish_map(exp_list, priority)
-        auto = reverse_polish_eval(rev_polish)
 
-        auto.uniform_names()
+        auto = Automata.atomic_automata("")
+        if rev_polish:
+            auto = reverse_polish_eval(rev_polish)
+            auto.uniform_names()
+
         return auto
 
     @staticmethod
