@@ -45,8 +45,6 @@ class App:
         if not os.path.isdir(auto_dir):
             os.mkdir(auto_dir)
 
-        print(auto_dir)
-
         ready = sorted(os.listdir(auto_dir))
         ready = list(map(lambda x: x.replace(".json", ""), ready))
 
