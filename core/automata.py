@@ -231,8 +231,12 @@ class Automata:
 
         return None
 
-    def epsilon_cerradure(self, one_state, cerradure=None):
+    def epsilon_cerradure(self, one_state, cerradure=None, count=0):
         """ Calculate the cerradure epsilon from one state """
+
+        #Avoid too much recursion
+        if count > len(self.get_states()) * 3:
+            return []
 
         new_cerradure = []
 
@@ -245,7 +249,7 @@ class Automata:
             # recursive case: ce(x) += ce(eval(x, ""))
             for trans in self.fetch_transition(one_state, ""):
                 if trans.get_state_to() not in new_cerradure:
-                    new_cerradure += self.epsilon_cerradure(trans.get_state_to(), new_cerradure)
+                    new_cerradure += self.epsilon_cerradure(trans.get_state_to(), new_cerradure, count+1)
 
         #return final  cerradure
         return new_cerradure

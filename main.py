@@ -1,9 +1,12 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 """
 Main script
 """
 
 import os
+import sys
 
 from core.automata import Automata
 from core.automata import Transition
@@ -38,7 +41,13 @@ class App:
         """
         Load from filename the automata
         """
-        ready = sorted(os.listdir("data"))
+        auto_dir = os.path.join(os.path.dirname(os.path.realpath(sys.argv[0])), "data")
+        if not os.path.isdir(auto_dir):
+            os.mkdir(auto_dir)
+
+        print(auto_dir)
+
+        ready = sorted(os.listdir(auto_dir))
         ready = list(map(lambda x: x.replace(".json", ""), ready))
 
         _file = xinput("Select one file {0}: ".format(ready))
@@ -47,7 +56,9 @@ class App:
             print("'{0}' is a invalid automata".format(_file))
             return None
 
-        _file = "data/{0}.json".format(_file)
+        _file = "{0}.json".format(_file)
+        _file = os.path.join(auto_dir, _file)
+
         auto = Automata()
         auto.from_filename(os.path.abspath(_file))
         return auto
@@ -134,8 +145,12 @@ class App:
 
         if option == "S" and self.__loaded:
             print("Save")
+            auto_dir = os.path.join(os.path.dirname(os.path.realpath(sys.argv[0])), "data")
+            if not os.path.isdir(auto_dir):
+                os.mkdir(auto_dir)
+
             _file = xinput("Insert the name of the automata: ")
-            _file = os.path.abspath("data/{0}.json".format(_file))
+            _file = os.path.abspath(os.path.join(auto_dir, "{0}.json".format(_file)))
             self.__auto.to_file(_file)
             print("Saved on: {0}".format(_file))
 

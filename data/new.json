@@ -1,0 +1,27 @@
+{
+    "aceptation": [
+        "q2"
+    ], 
+    "alphabet": [
+        "a", 
+        "b"
+    ], 
+    "initial": "q0", 
+    "states": [
+        "q0", 
+        "q1", 
+        "q2"
+    ], 
+    "transitions": [
+        {
+            "state_from": "q0", 
+            "state_to": "q1", 
+            "token": "a"
+        }, 
+        {
+            "state_from": "q1", 
+            "state_to": "q2", 
+            "token": "b"
+        }
+    ]
+}
